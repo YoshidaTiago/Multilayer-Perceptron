@@ -24,11 +24,9 @@ np.random.shuffle(indices)
 X_normalized = X_normalized[indices]
 y_onehot = y_onehot[indices]
 
-train_size = int(0.6 * len(X))
-val_size = int(0.2 * len(X))
+train_size = int(0.8 * len(X))
 X_train, y_train = X_normalized[:train_size], y_onehot[:train_size]
-X_val, y_val = X_normalized[train_size:train_size+val_size], y_onehot[train_size:train_size+val_size]
-X_test, y_test = X_normalized[train_size+val_size:], y_onehot[train_size+val_size:]
+X_test, y_test = X_normalized[train_size:], y_onehot[train_size:]
 
 n_neurons = int(input("Perceptrons na camada oculta: "))
 learning_rate = float(input("Taxa de aprendizado: "))
