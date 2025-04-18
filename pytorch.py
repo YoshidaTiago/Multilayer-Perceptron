@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
 import pandas as pd
 import numpy as np
 
@@ -41,17 +40,15 @@ batch_size = int(input("Tamanho do batch: "))
 class MLP(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(MLP, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, output_size)
+        self.hidden_layer = nn.Linear(input_size, hidden_size)
+        self.output_layer = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
-        x = F.relu(self.fc1(x))
-        return F.log_softmax(self.fc2(x), dim=1)
+        x = F.relu(self.hidden_layer(x))
+        return self.output_layer(x)
 
 model = MLP(input_size=4, hidden_size=n_neurons, output_size=3)
-
-criterion = nn.NLLLoss()
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+loss_function = nn.CrossEntropyLoss()
 
 for epoch in range(epochs):
     permutation = torch.randperm(X_train.size(0))
@@ -59,11 +56,16 @@ for epoch in range(epochs):
         indices = permutation[i:i+batch_size]
         batch_X, batch_y = X_train[indices], y_train[indices]
 
-        optimizer.zero_grad()
+        model.zero_grad()
+
         outputs = model(batch_X)
-        loss = criterion(outputs, batch_y)
+        loss = loss_function(outputs, batch_y)
+
         loss.backward()
-        optimizer.step()
+
+        with torch.no_grad():
+            for param in model.parameters():
+                param -= learning_rate * param.grad
 
     if epoch % 100 == 0:
         print(f"Epoch {epoch}, Loss: {loss.item():.4f}")
